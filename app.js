@@ -193,7 +193,7 @@ function startStatsCounter() {
     var minutes = elapsed / 60;
     var coffee = Math.max(0, Math.floor(minutes / 20));
     var lines  = Math.floor(minutes * 10);
-    var songs  = Math.floor(minutes / 3.5);
+    var songs  = Math.floor(minutes / 20); // avg murottal/ceramah ~20 menit
     var steps  = Math.floor(minutes * 100);
     animateNumber('stat-coffee', coffee);
     animateNumber('stat-lines',  lines);

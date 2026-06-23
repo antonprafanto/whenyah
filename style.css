@@ -427,6 +427,43 @@ body {
 .btn-share-copy:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-xl); }
 .btn-share-copy:active { transform: translate(3px, 3px); box-shadow: none; }
 
+.btn-share-threads {
+  background: #000000;
+  color: var(--white);
+  border: var(--border);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-share-threads:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-xl); }
+.btn-share-threads:active { transform: translate(3px, 3px); box-shadow: none; }
+
+.btn-share-linkedin {
+  background: #0A66C2;
+  color: var(--white);
+  border: var(--border);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-share-linkedin:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-xl); }
+.btn-share-linkedin:active { transform: translate(3px, 3px); box-shadow: none; }
+
+
 /* ---- SECTION DIVIDER ---- */
 .section-divider {
   display: flex;

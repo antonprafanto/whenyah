@@ -586,6 +586,21 @@ function shareTwitter() {
   window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
 }
 
+function shareThreads() {
+  var text = encodeURIComponent('Masih nunggu pengumuman 100 pemenang SWAG #JuaraVibeCoding dari Google Indonesia? Sambil nunggu, main-main dulu di website interaktif ini! ' + window.location.href);
+  window.open('https://www.threads.net/intent/post?text=' + text, '_blank');
+}
+
+function shareLinkedIn() {
+  var url     = encodeURIComponent(window.location.href);
+  var title   = encodeURIComponent('Nunggu pengumuman #JuaraVibeCoding? Ada website interaktif buat nemenin!');
+  var summary = encodeURIComponent('Masih nunggu pengumuman 100 pemenang SWAG #JuaraVibeCoding dari Google Indonesia? Ayo cobain website interaktif ini biar nggak bosen! Ada reaction time, Simon Says, Whack-a-Mole, dan banyak lagi!');
+  window.open(
+    'https://www.linkedin.com/shareArticle?mini=true&url=' + url + '&title=' + title + '&summary=' + summary,
+    '_blank'
+  );
+}
+
 function copyLink() {
   var url = window.location.href;
   if (navigator.clipboard && navigator.clipboard.writeText) {

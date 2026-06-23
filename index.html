@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>#JuaraVibeCoding — Waiting Room 🎉</title>
+  <meta name="description" content="Ruang tunggu interaktif untuk peserta #JuaraVibeCoding Google. 100 pemenang SWAG akan segera diumumkan!" />
+  <meta property="og:title" content="#JuaraVibeCoding — Ruang Tunggu SWAG" />
+  <meta property="og:description" content="Sabar dulu, kami lagi milih 100 pemenang SWAG! Sambil tunggu, main-main dulu yuk 🎮" />
+  <meta property="og:image" content="https://services.google.com/fh/files/misc/jvc_rsvp_hero2.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Floating Particles -->
+  <div id="particles-container" aria-hidden="true"></div>
+
+  <!-- Noise Overlay -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        LIVE — Menunggu Pengumuman
+      </div>
+      <div class="header-logo">
+        <span class="logo-hash">#</span>JuaraVibeCoding
+      </div>
+      <div class="header-powered">
+        by <strong>Google</strong> 🇮🇩
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="hero">
+      <div class="hero-sticker sticker-1">🔥 HYPE</div>
+      <div class="hero-sticker sticker-2">⚡ VIBE</div>
+      <div class="hero-sticker sticker-3">🚀 CODE</div>
+      <div class="hero-sticker sticker-4">🎯 WIN</div>
+
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="tag tag-google">Google Indonesia</span>
+          <span class="tag tag-event">SWAG Hunt 2026</span>
+        </div>
+        <h1 class="hero-title">
+          <span class="title-line">SABAR</span>
+          <span class="title-line accent">DIKIT</span>
+          <span class="title-line">LAH! 😤</span>
+        </h1>
+        <p class="hero-sub">
+          100 peserta beruntung akan dapat SWAG kece dari Google.<br/>
+          Pengumuman sedang dalam proses... sambil tunggu, gaskeun!
+        </p>
+
+        <!-- Countdown Timer -->
+        <div class="countdown-wrapper" id="countdown-section">
+          <div class="countdown-label">⏳ Sudah menunggu selama...</div>
+          <div class="countdown-boxes" id="wait-timer">
+            <div class="countdown-box">
+              <div class="countdown-value" id="wait-hours">00</div>
+              <div class="countdown-unit">JAM</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-box">
+              <div class="countdown-value" id="wait-minutes">00</div>
+              <div class="countdown-unit">MENIT</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-box">
+              <div class="countdown-value" id="wait-seconds">00</div>
+              <div class="countdown-unit">DETIK</div>
+            </div>
+          </div>
+          <div class="countdown-fun-msg" id="fun-msg">Masih sabar kan? 😅</div>
+        </div>
+
+        <a href="https://rsvp.withgoogle.com/events/juaravibecoding/home" target="_blank" class="btn btn-primary" id="cta-main">
+          Lihat Event →
+        </a>
+      </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <div class="divider-text">PILIH AKTIVITAS KAMU 👇</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- MINI GAMES GRID -->
+    <section class="games-grid" id="games">
+
+      <!-- GAME 1: Lucky Number Spinner -->
+      <div class="game-card card-yellow" id="card-spinner">
+        <div class="card-header">
+          <div class="card-number">01</div>
+          <div class="card-title">Lucky Number</div>
+          <div class="card-icon">🎰</div>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Coba spin buat tau nomor keberuntungan kamu hari ini!</p>
+          <div class="slot-machine" id="slot-machine">
+            <div class="slot-reel" id="slot-a"><span>?</span></div>
+            <div class="slot-reel" id="slot-b"><span>?</span></div>
+            <div class="slot-reel" id="slot-c"><span>?</span></div>
+          </div>
+          <div class="slot-result" id="slot-result">Belum spin nih!</div>
+          <button class="btn btn-dark" id="spin-btn" onclick="spinSlot()">🎰 SPIN!</button>
+        </div>
+      </div>
+
+      <!-- GAME 2: Vibe Checker -->
+      <div class="game-card card-pink" id="card-vibe">
+        <div class="card-header">
+          <div class="card-number">02</div>
+          <div class="card-title">Vibe Checker</div>
+          <div class="card-icon">🌡️</div>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Seberapa kenceng vibe coding kamu hari ini?</p>
+          <div class="vibe-meter">
+            <div class="vibe-bar-bg">
+              <div class="vibe-bar-fill" id="vibe-fill"></div>
+            </div>
+            <div class="vibe-percentage" id="vibe-pct">0%</div>
+          </div>
+          <div class="vibe-label" id="vibe-label">Klik untuk cek vibe!</div>
+          <button class="btn btn-dark" id="vibe-btn" onclick="checkVibe()">⚡ CEK VIBE</button>
+        </div>
+      </div>
+
+      <!-- GAME 3: Clicker -->
+      <div class="game-card card-blue" id="card-clicker">
+        <div class="card-header">
+          <div class="card-number">03</div>
+          <div class="card-title">Panic Clicker</div>
+          <div class="card-icon">👆</div>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Klik sebanyak-banyaknya! Lebih banyak klik = makin beruntung (mungkin 😂)</p>
+          <div class="click-display">
+            <div class="click-count" id="click-count">0</div>
+            <div class="click-label">KLIK</div>
+          </div>
+          <div class="click-rank" id="click-rank">Mulai klik dong!</div>
+          <button class="btn btn-dark btn-big-click" id="click-btn" onclick="addClick()">🤜 KLIK!</button>
+        </div>
+      </div>
+
+      <!-- GAME 4: Quote Generator -->
+      <div class="game-card card-green" id="card-quote">
+        <div class="card-header">
+          <div class="card-number">04</div>
+          <div class="card-title">Kata Penyemangat</div>
+          <div class="card-icon">💬</div>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Butuh semangat buat nunggu? Punya kita!</p>
+          <div class="quote-box" id="quote-box">
+            <div class="quote-text" id="quote-text">"Tekan tombol dulu dong!"</div>
+            <div class="quote-author" id="quote-author">— Tunggu dulu</div>
+          </div>
+          <button class="btn btn-dark" id="quote-btn" onclick="newQuote()">✨ SEMANGAT!</button>
+        </div>
+      </div>
+
+      <!-- GAME 5: Will I Win? -->
+      <div class="game-card card-orange" id="card-predict">
+        <div class="card-header">
+          <div class="card-number">05</div>
+          <div class="card-title">Akan Menang?</div>
+          <div class="card-icon">🔮</div>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Crystal ball AI super canggih (ga ada AI-nya sih) untuk prediksi keberuntunganmu!</p>
+          <div class="crystal-ball" id="crystal-ball" onclick="predictWin()">
+            <div class="crystal-inner">
+              <span class="crystal-emoji" id="crystal-emoji">🔮</span>
+            </div>
+            <div class="crystal-glow" id="crystal-glow"></div>
+          </div>
+          <div class="predict-result" id="predict-result">Klik bola kristal!</div>
+          <button class="btn btn-dark" id="predict-btn" onclick="predictWin()">🔮 RAMAL!</button>
+        </div>
+      </div>
+
+      <!-- GAME 6: Waiting Simulator -->
+      <div class="game-card card-purple" id="card-simulate">
+        <div class="card-header">
+          <div class="card-number">06</div>
+          <div class="card-title">Patience Score</div>
+          <div class="card-icon">🧘</div>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Tahan tombol ini selama 3 detik. Seberapa sabar kamu?</p>
+          <div class="patience-display">
+            <div class="patience-ring" id="patience-ring">
+              <svg viewBox="0 0 100 100" class="patience-svg">
+                <circle cx="50" cy="50" r="40" class="patience-track"/>
+                <circle cx="50" cy="50" r="40" class="patience-progress" id="patience-progress"/>
+              </svg>
+              <div class="patience-emoji" id="patience-emoji">😐</div>
+            </div>
+          </div>
+          <div class="patience-msg" id="patience-msg">Tahan tombol buat mulai!</div>
+          <button class="btn btn-dark" id="patience-btn"
+            onmousedown="startPatience()" ontouchstart="startPatience()"
+            onmouseup="stopPatience()" ontouchend="stopPatience()"
+            onmouseleave="stopPatience()">
+            🧘 TAHAN!
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- LEADERBOARD / FUN STATS -->
+    <section class="stats-section" id="stats">
+      <div class="stats-header">
+        <div class="stats-title">📊 STATISTIK MENUNGGU</div>
+        <div class="stats-subtitle">Fakta absurd selama kamu menunggu pengumuman</div>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">☕</div>
+          <div class="stat-value" id="stat-coffee">0</div>
+          <div class="stat-label">Gelas kopi yang harusnya kamu minum</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💻</div>
+          <div class="stat-value" id="stat-lines">0</div>
+          <div class="stat-label">Baris kode yang bisa kamu tulis dalam waktu ini</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎵</div>
+          <div class="stat-value" id="stat-songs">0</div>
+          <div class="stat-label">Lagu yang bisa kamu dengerin sambil nunggu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏃</div>
+          <div class="stat-value" id="stat-steps">0</div>
+          <div class="stat-label">Langkah jalan santai selama nunggu</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SWAG SHOWCASE -->
+    <section class="swag-section" id="swag">
+      <div class="swag-inner">
+        <div class="swag-label">HADIAH YANG MENANTI 🎁</div>
+        <div class="swag-title">100 Pemenang dapat SWAG dari Google!</div>
+        <div class="swag-items">
+          <div class="swag-item" style="--delay:0s">
+            <div class="swag-emoji">👕</div>
+            <div class="swag-name">T-Shirt</div>
+          </div>
+          <div class="swag-item" style="--delay:0.1s">
+            <div class="swag-emoji">🎒</div>
+            <div class="swag-name">Tote Bag</div>
+          </div>
+          <div class="swag-item" style="--delay:0.2s">
+            <div class="swag-emoji">📓</div>
+            <div class="swag-name">Notebook</div>
+          </div>
+          <div class="swag-item" style="--delay:0.3s">
+            <div class="swag-emoji">✏️</div>
+            <div class="swag-name">Sticker Pack</div>
+          </div>
+          <div class="swag-item" style="--delay:0.4s">
+            <div class="swag-emoji">🖊️</div>
+            <div class="swag-name">Pen</div>
+          </div>
+          <div class="swag-item" style="--delay:0.5s">
+            <div class="swag-emoji">🏆</div>
+            <div class="swag-name">& More!</div>
+          </div>
+        </div>
+        <p class="swag-disclaimer">* Item SWAG ilustrasi. Hadiah sebenarnya mungkin berbeda.</p>
+      </div>
+    </section>
+
+    <!-- SHARE SECTION -->
+    <section class="share-section" id="share">
+      <div class="share-inner">
+        <div class="share-title">Ajak Temen Nunggu Bareng! 🤝</div>
+        <div class="share-subtitle">Share website ini ke temen sesama peserta #JuaraVibeCoding</div>
+        <div class="share-buttons">
+          <button class="btn btn-share-twitter" id="share-twitter-btn" onclick="shareTwitter()">
+            𝕏 Share di Twitter/X
+          </button>
+          <button class="btn btn-share-copy" id="share-copy-btn" onclick="copyLink()">
+            📋 Salin Link
+          </button>
+        </div>
+        <div class="share-copied" id="share-copied">✅ Link tersalin!</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">#JuaraVibeCoding</div>
+      <div class="footer-links">
+        <a href="https://rsvp.withgoogle.com/events/juaravibecoding/home" target="_blank" class="footer-link">Event Page</a>
+        <span class="footer-sep">•</span>
+        <a href="https://twitter.com/search?q=%23juaravibecoding" target="_blank" class="footer-link">#JuaraVibeCoding</a>
+      </div>
+      <div class="footer-made">Made with ❤️ + ☕ while waiting for the announcement</div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

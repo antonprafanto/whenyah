@@ -119,21 +119,6 @@ var patienceDone = false;
 var patienceStart = null;
 var patienceRAF = null;
 
-// Memory game state
-var memoryTiles = ['💻', '☕', '🚀', '🐛', '📦', '⚡', '💻', '☕', '🚀', '🐛', '📦', '⚡'];
-var memoryFlipped = [];
-var memoryMoves = 0;
-var memoryLock = false;
-var memoryBest = null;
-
-// Simon game state
-var simonSeq = [];
-var simonUserSeq = [];
-var simonRound = 0;
-var simonActive = false;
-var simonPlayingSeq = false;
-var simonBest = null;
-
 // ── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   initParticles();
@@ -143,9 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
   animateEntrance();
   // Auto-load first quote
   setTimeout(newQuote, 500);
-  // Init new games
-  initMemoryGame();
-  resetSimonState();
 });
 
 // ── PARTICLES ───────────────────────────────────────────
@@ -694,214 +676,331 @@ function animateEntrance() {
   });
 }
 
-// ── CARI PASANGAN (MEMORY MATCH) ────────────────────────
-function shuffleArray(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
-  while (0 !== currentIndex) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-  return array;
-}
+// ── SIMON SAYS ───────────────────────────────────────────
+var simonSequence   = [];
+var simonPlayerTurn = false;
+var simonPlayerIdx  = 0;
+var simonBestRound  = 0;
+var simonPlaying    = false;
+var SIMON_COLORS    = ['red', 'blue', 'yellow', 'green'];
+var SIMON_SPEED     = 600; // ms per flash (gets faster each 4 rounds)
 
-function initMemoryGame() {
-  var grid = document.getElementById('memory-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
+function startSimon() {
+  simonSequence   = [];
+  simonPlayerTurn = false;
+  simonPlayerIdx  = 0;
+  simonPlaying    = true;
 
-  memoryFlipped = [];
-  memoryMoves = 0;
-  memoryLock = false;
-
-  var movesEl = document.getElementById('memory-moves');
-  if (movesEl) movesEl.textContent = '0';
-
-  var shuffled = shuffleArray(memoryTiles.slice());
-  for (var i = 0; i < shuffled.length; i++) {
-    var tile = document.createElement('div');
-    tile.className = 'memory-tile';
-    tile.setAttribute('data-index', i);
-    tile.setAttribute('data-value', shuffled[i]);
-    // Inner wrapper needed for padding-bottom aspect-ratio trick
-    var inner = document.createElement('div');
-    inner.className = 'memory-tile-inner';
-    inner.textContent = '?';
-    tile.appendChild(inner);
-    tile.onclick = handleTileClick;
-    grid.appendChild(tile);
-  }
-}
-
-function startMemoryGame() {
-  initMemoryGame();
-  showToast('Game di-reset! Cari semua pasangan emoji!');
-}
-
-function handleTileClick(e) {
-  if (memoryLock) return;
-  var tile = e.currentTarget;
-
-  // Don't click already flipped or matched tiles
-  if (tile.classList.contains('flipped') || tile.classList.contains('matched')) return;
-
-  // Reveal emoji in inner div
-  var inner = tile.querySelector('.memory-tile-inner');
-  if (inner) inner.textContent = tile.getAttribute('data-value');
-  tile.classList.add('flipped');
-  memoryFlipped.push(tile);
-
-  if (memoryFlipped.length === 2) {
-    memoryMoves++;
-    var movesEl = document.getElementById('memory-moves');
-    if (movesEl) movesEl.textContent = memoryMoves;
-
-    var tile1 = memoryFlipped[0];
-    var tile2 = memoryFlipped[1];
-    var val1 = tile1.getAttribute('data-value');
-    var val2 = tile2.getAttribute('data-value');
-
-    if (val1 === val2) {
-      // Match!
-      tile1.classList.add('matched');
-      tile2.classList.add('matched');
-      tile1.classList.remove('flipped');
-      tile2.classList.remove('flipped');
-      memoryFlipped = [];
-
-      // Check win
-      var matchedCount = document.querySelectorAll('.memory-tile.matched').length;
-      if (matchedCount === memoryTiles.length) {
-        if (memoryBest === null || memoryMoves < memoryBest) {
-          memoryBest = memoryMoves;
-          var bestEl = document.getElementById('memory-best');
-          if (bestEl) bestEl.textContent = memoryBest;
-        }
-        showToast('HEBAT! Semua pasangan ketemu dalam ' + memoryMoves + ' langkah! 🎉');
-      }
-    } else {
-      // No match — flip back after delay
-      memoryLock = true;
-      setTimeout(function() {
-        var inner1 = tile1.querySelector('.memory-tile-inner');
-        var inner2 = tile2.querySelector('.memory-tile-inner');
-        tile1.classList.remove('flipped');
-        tile2.classList.remove('flipped');
-        if (inner1) inner1.textContent = '?';
-        if (inner2) inner2.textContent = '?';
-        memoryFlipped = [];
-        memoryLock = false;
-      }, 900);
-    }
-  }
-}
-
-// ── VIBE SEQUENCE (SIMON SAYS) ──────────────────────────
-function resetSimonState() {
-  simonSeq = [];
-  simonUserSeq = [];
-  simonRound = 0;
-  simonActive = false;
-  simonPlayingSeq = false;
-  
-  var scoreEl = document.getElementById('simon-score');
-  if (scoreEl) scoreEl.textContent = '0';
-  
   var btn = document.getElementById('simon-btn');
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = '🚥 MULAI MAIN';
-  }
+  if (btn) { btn.disabled = true; btn.textContent = '🎨 Bermain...'; }
+  simonSetMsg('Perhatikan urutannya!');
+  simonSetButtonsDisabled(true);
+
+  // Add one and play
+  setTimeout(function() { simonNextRound(); }, 600);
 }
 
-function startSimonGame() {
-  resetSimonState();
-  simonActive = true;
-  var btn = document.getElementById('simon-btn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '🎮 SEDANG BERMAIN';
-  }
-  nextSimonRound();
+function simonNextRound() {
+  // Add one random color to sequence
+  simonSequence.push(Math.floor(Math.random() * 4));
+  simonPlayerIdx  = 0;
+  simonPlayerTurn = false;
+
+  var roundEl = document.getElementById('simon-round');
+  if (roundEl) roundEl.textContent = simonSequence.length;
+  simonSetMsg('Perhatikan...');
+
+  // Calculate speed (faster every 4 rounds)
+  var speed = Math.max(250, SIMON_SPEED - Math.floor(simonSequence.length / 4) * 80);
+
+  // Play the sequence
+  simonPlaySequence(0, speed);
 }
 
-function nextSimonRound() {
-  simonUserSeq = [];
-  simonRound++;
-  var scoreEl = document.getElementById('simon-score');
-  if (scoreEl) scoreEl.textContent = (simonRound - 1).toString();
-  
-  // Add random step (0, 1, 2, or 3)
-  simonSeq.push(Math.floor(Math.random() * 4));
-  
-  playSimonSequence();
-}
-
-function playSimonSequence() {
-  simonPlayingSeq = true;
-  var i = 0;
-  
-  function flashNext() {
-    if (i >= simonSeq.length) {
-      simonPlayingSeq = false;
-      return;
-    }
-    
-    var padIndex = simonSeq[i];
-    flashSimonPad(padIndex);
-    i++;
-    setTimeout(flashNext, 800);
-  }
-  
-  // Wait a bit before starting the playback
-  setTimeout(flashNext, 500);
-}
-
-function flashSimonPad(index) {
-  var pad = document.getElementById('simon-pad-' + index);
-  if (!pad) return;
-  pad.classList.add('active');
-  setTimeout(function() {
-    pad.classList.remove('active');
-  }, 400);
-}
-
-function handleSimonPadClick(index) {
-  if (!simonActive || simonPlayingSeq) return;
-  
-  // Flash clicked pad
-  flashSimonPad(index);
-  
-  simonUserSeq.push(index);
-  
-  // Check correctness
-  var stepIndex = simonUserSeq.length - 1;
-  if (simonUserSeq[stepIndex] !== simonSeq[stepIndex]) {
-    // Incorrect! Game over
-    var score = simonRound - 1;
-    showToast('Yah salah urutan! Skor kamu: ' + score);
-    
-    if (simonBest === null || score > simonBest) {
-      simonBest = score;
-      var bestEl = document.getElementById('simon-best');
-      if (bestEl) bestEl.textContent = simonBest;
-    }
-    
-    resetSimonState();
+function simonPlaySequence(idx, speed) {
+  if (idx >= simonSequence.length) {
+    // Done playing — player's turn
+    simonPlayerTurn = true;
+    simonSetMsg('Giliran kamu! Klik urutan yang sama!');
+    simonSetButtonsDisabled(false);
     return;
   }
-  
-  // Correct click. Check if sequence is complete
-  if (simonUserSeq.length === simonSeq.length) {
-    // Round complete!
-    showToast('Mantap! Lanjut ke ronde ' + (simonRound + 1));
-    setTimeout(nextSimonRound, 1000);
+  var colorIdx = simonSequence[idx];
+  setTimeout(function() {
+    simonFlash(colorIdx, speed * 0.6, function() {
+      setTimeout(function() { simonPlaySequence(idx + 1, speed); }, speed * 0.4);
+    });
+  }, speed * 0.1);
+}
+
+function simonFlash(colorIdx, duration, cb) {
+  var btn = document.getElementById('simon-' + colorIdx);
+  if (!btn) { if (cb) cb(); return; }
+  btn.classList.add('lit');
+  setTimeout(function() {
+    btn.classList.remove('lit');
+    if (cb) cb();
+  }, duration);
+}
+
+function simonPress(colorIdx) {
+  if (!simonPlayerTurn || !simonPlaying) return;
+
+  // Flash the pressed button
+  simonFlash(colorIdx, 200, function() {});
+
+  if (colorIdx === simonSequence[simonPlayerIdx]) {
+    // Correct!
+    simonPlayerIdx++;
+    if (simonPlayerIdx >= simonSequence.length) {
+      // Completed this round!
+      simonPlayerTurn = false;
+      simonSetButtonsDisabled(true);
+      if (simonSequence.length > simonBestRound) {
+        simonBestRound = simonSequence.length;
+        var bestEl = document.getElementById('simon-best');
+        if (bestEl) bestEl.textContent = simonBestRound;
+      }
+      simonSetMsg('Benar! Siap ronde berikutnya...');
+      setTimeout(function() { simonNextRound(); }, 1000);
+    }
+  } else {
+    // Wrong!
+    simonPlaying    = false;
+    simonPlayerTurn = false;
+    simonSetButtonsDisabled(true);
+    simonSetMsg('SALAH! Game over di ronde ' + simonSequence.length + '!');
+    showToast('Simon Says: salah di ronde ' + simonSequence.length + '! Best: ' + simonBestRound);
+
+    // Flash all red to indicate game over
+    for (var i = 0; i < 4; i++) {
+      (function(ci) {
+        setTimeout(function() { simonFlash(ci, 300, function() {}); }, ci * 120);
+      })(i);
+    }
+
+    var btn = document.getElementById('simon-btn');
+    if (btn) { btn.disabled = false; btn.textContent = '🎨 MAIN LAGI!'; }
   }
+}
+
+function simonSetMsg(msg) {
+  var el = document.getElementById('simon-msg');
+  if (el) el.textContent = msg;
+}
+
+function simonSetButtonsDisabled(disabled) {
+  for (var i = 0; i < 4; i++) {
+    var btn = document.getElementById('simon-' + i);
+    if (btn) btn.disabled = disabled;
+  }
+}
+
+// ── CODING TRIVIA ─────────────────────────────────────────
+var TRIVIA_QUESTIONS = [
+  {
+    q: "Apa singkatan dari HTML?",
+    opts: ["HyperText Markup Language", "High Transfer Markup Layout", "Hyper Technical Machine Logic", "HyperText Markdown Link"],
+    ans: 0
+  },
+  {
+    q: "Perintah Git apa yang dipakai untuk menyimpan perubahan ke repo lokal?",
+    opts: ["git push", "git save", "git commit", "git apply"],
+    ans: 2
+  },
+  {
+    q: "Bahasa pemrograman apa yang paling banyak dipakai di web browser secara native?",
+    opts: ["Python", "Java", "TypeScript", "JavaScript"],
+    ans: 3
+  },
+  {
+    q: "Apa kepanjangan dari API?",
+    opts: ["Application Programming Interface", "Automated Program Integration", "App Process Installer", "Advanced Protocol Input"],
+    ans: 0
+  },
+  {
+    q: "CSS adalah singkatan dari...?",
+    opts: ["Computer Style Script", "Cascading Style Sheets", "Creative Styling System", "Custom Site Structure"],
+    ans: 1
+  },
+  {
+    q: "Manakah yang BUKAN merupakan JavaScript framework/library?",
+    opts: ["React", "Vue", "Django", "Angular"],
+    ans: 2
+  },
+  {
+    q: "Apa fungsi dari perintah 'git pull'?",
+    opts: [
+      "Menghapus file dari repo",
+      "Mengambil dan menggabungkan perubahan dari remote",
+      "Membuat branch baru",
+      "Membatalkan commit terakhir"
+    ],
+    ans: 1
+  },
+  {
+    q: "Dalam pemrograman, 'bug' pertama kali ditemukan dalam konteks apa?",
+    opts: [
+      "Kesalahan logika di kode C",
+      "Ngengat nyangkut di relay komputer",
+      "Typo di punch card",
+      "Error di bahasa Assembly"
+    ],
+    ans: 1
+  },
+  {
+    q: "Apa itu 'vibe coding'?",
+    opts: [
+      "Coding sambil dengerin musik lo-fi",
+      "Coding cepat-cepatan tanpa mikir",
+      "Pendekatan coding yang fun, santai, dan kreatif",
+      "Framework JavaScript baru dari Google"
+    ],
+    ans: 2
+  },
+  {
+    q: "Berapa jumlah pemenang SWAG di event #JuaraVibeCoding ini?",
+    opts: ["50 orang", "200 orang", "100 orang", "75 orang"],
+    ans: 2
+  },
+];
+
+var triviaCurrentQ  = 0;
+var triviaScore     = 0;
+var triviaAnswered  = false;
+var triviaShuffled  = [];
+var triviaTimer     = null;
+var TRIVIA_TIME     = 8000; // ms per question
+
+function startTrivia() {
+  triviaScore    = 0;
+  triviaCurrentQ = 0;
+  triviaAnswered = false;
+  triviaShuffled = shuffleArray(TRIVIA_QUESTIONS.slice());
+
+  var btn = document.getElementById('trivia-btn');
+  if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+
+  var totalEl = document.getElementById('trivia-total');
+  var scoreEl = document.getElementById('trivia-score');
+  if (totalEl) totalEl.textContent = triviaShuffled.length;
+  if (scoreEl) scoreEl.textContent = 0;
+
+  triviaShowQuestion();
+}
+
+function triviaShowQuestion() {
+  if (triviaCurrentQ >= triviaShuffled.length) {
+    triviaFinish();
+    return;
+  }
+
+  triviaAnswered = false;
+  clearTimeout(triviaTimer);
+  var q = triviaShuffled[triviaCurrentQ];
+
+  // Update progress
+  var pct = (triviaCurrentQ / triviaShuffled.length) * 100;
+  var bar = document.getElementById('trivia-progress-bar');
+  if (bar) bar.style.width = pct + '%';
+
+  var qnumEl = document.getElementById('trivia-qnum');
+  if (qnumEl) qnumEl.textContent = 'Soal ' + (triviaCurrentQ + 1) + ' / ' + triviaShuffled.length;
+
+  var qEl = document.getElementById('trivia-question');
+  if (qEl) qEl.textContent = q.q;
+
+  // Build options
+  var optsEl = document.getElementById('trivia-options');
+  if (!optsEl) return;
+  optsEl.innerHTML = '';
+  var labels = ['A', 'B', 'C', 'D'];
+  for (var i = 0; i < q.opts.length; i++) {
+    (function(idx) {
+      var btn = document.createElement('button');
+      btn.className = 'trivia-opt';
+      btn.id        = 'trivia-opt-' + idx;
+      btn.innerHTML = '<span>' + labels[idx] + '</span> ' + q.opts[idx];
+      btn.onclick   = function() { triviaAnswer(idx); };
+      optsEl.appendChild(btn);
+    })(i);
+  }
+
+  // Auto-advance timer
+  triviaTimer = setTimeout(function() {
+    if (!triviaAnswered) {
+      triviaAnswered = true;
+      triviaRevealCorrect(q.ans, -1);
+      setTimeout(function() { triviaCurrentQ++; triviaShowQuestion(); }, 1800);
+    }
+  }, TRIVIA_TIME);
+}
+
+function triviaAnswer(selectedIdx) {
+  if (triviaAnswered) return;
+  triviaAnswered = true;
+  clearTimeout(triviaTimer);
+
+  var q = triviaShuffled[triviaCurrentQ];
+  var isCorrect = selectedIdx === q.ans;
+  if (isCorrect) {
+    triviaScore++;
+    var scoreEl = document.getElementById('trivia-score');
+    if (scoreEl) scoreEl.textContent = triviaScore;
+  }
+
+  triviaRevealCorrect(q.ans, selectedIdx);
+  setTimeout(function() { triviaCurrentQ++; triviaShowQuestion(); }, 1600);
+}
+
+function triviaRevealCorrect(correctIdx, selectedIdx) {
+  for (var i = 0; i < 4; i++) {
+    var btn = document.getElementById('trivia-opt-' + i);
+    if (!btn) continue;
+    btn.disabled = true;
+    btn.classList.remove('correct', 'wrong', 'reveal-correct');
+    if (i === correctIdx) {
+      btn.classList.add(selectedIdx === -1 ? 'reveal-correct' : 'correct');
+    } else if (i === selectedIdx && selectedIdx !== correctIdx) {
+      btn.classList.add('wrong');
+    }
+  }
+}
+
+function triviaFinish() {
+  var pct = Math.round((triviaScore / triviaShuffled.length) * 100);
+  var qEl = document.getElementById('trivia-question');
+  if (qEl) qEl.textContent = 'Kuis selesai! Skor kamu: ' + triviaScore + '/' + triviaShuffled.length + ' (' + pct + '%)';
+
+  var optsEl = document.getElementById('trivia-options');
+  if (optsEl) optsEl.innerHTML = '';
+
+  var bar = document.getElementById('trivia-progress-bar');
+  if (bar) bar.style.width = '100%';
+
+  var qnumEl = document.getElementById('trivia-qnum');
+  if (qnumEl) qnumEl.textContent = 'Selesai!';
+
+  var msg = pct >= 80 ? 'Jenius! Kamu beneran jago coding!' :
+            pct >= 60 ? 'Bagus! Masih banyak yang bisa dipelajari.' :
+            pct >= 40 ? 'Lumayan! Terus belajar ya!' :
+                        'Semangat belajar lagi, next time pasti lebih baik!';
+  showToast(msg + ' (' + triviaScore + '/' + triviaShuffled.length + ')');
+
+  var btn = document.getElementById('trivia-btn');
+  if (btn) { btn.disabled = false; btn.style.display = ''; btn.textContent = '🔄 MAIN LAGI!'; }
+}
+
+function shuffleArray(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
 }
 
 // ── EASTER EGG (Konami Code) ────────────────────────────
+
 var konamiSeq = [];
 var KONAMI    = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 

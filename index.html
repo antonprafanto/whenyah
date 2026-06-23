@@ -255,64 +255,62 @@
         </div>
       </div>
 
-      <!-- GAME 7: Cari Pasangan -->
-      <div class="game-card card-red" id="card-memory">
+
+    </section>
+
+    <!-- GAME 7: Simon Says -->
+    <section class="games-grid games-grid-extra" id="games-extra">
+
+      <div class="game-card card-teal" id="card-simon">
         <div class="card-header">
           <div class="card-number">07</div>
-          <div class="card-title">Cari Pasangan</div>
-          <div class="card-icon">🧠</div>
+          <div class="card-title">Simon Says</div>
+          <div class="card-icon">🎨</div>
         </div>
         <div class="card-body">
-          <p class="card-desc">Temukan 6 pasang emoji coding yang kembar! Klik kartu untuk membalik.</p>
-          <div class="memory-grid" id="memory-grid">
-            <!-- Diisi dinamis oleh JS -->
+          <p class="card-desc">Perhatikan urutan warna yang menyala, lalu klik dalam urutan yang sama! Makin lama makin susah!</p>
+          <div class="simon-status">
+            <div class="simon-round">Ronde: <span id="simon-round">—</span></div>
+            <div class="simon-best">Best: <span id="simon-best">—</span></div>
           </div>
-          <div class="memory-stats">
-            <div class="memory-stat-item">
-              <strong id="memory-moves">0</strong>
-              LANGKAH
-            </div>
-            <div class="memory-stat-item">
-              <strong id="memory-best">—</strong>
-              TERBAIK
-            </div>
+          <div class="simon-grid" id="simon-grid">
+            <button class="simon-btn simon-red"    id="simon-0" onclick="simonPress(0)" disabled></button>
+            <button class="simon-btn simon-blue"   id="simon-1" onclick="simonPress(1)" disabled></button>
+            <button class="simon-btn simon-yellow" id="simon-2" onclick="simonPress(2)" disabled></button>
+            <button class="simon-btn simon-green"  id="simon-3" onclick="simonPress(3)" disabled></button>
           </div>
-          <button class="btn btn-dark" id="memory-btn" onclick="startMemoryGame()">🔄 RESET GAME</button>
+          <div class="simon-msg" id="simon-msg">Tekan START untuk mulai!</div>
+          <button class="btn btn-dark" id="simon-btn" onclick="startSimon()">🎨 START!</button>
         </div>
       </div>
 
-      <!-- GAME 8: Vibe Sequence -->
-      <div class="game-card card-teal" id="card-simon">
+      <!-- GAME 8: Coding Trivia -->
+      <div class="game-card card-red" id="card-trivia">
         <div class="card-header">
           <div class="card-number">08</div>
-          <div class="card-title">Vibe Sequence</div>
-          <div class="card-icon">🚥</div>
+          <div class="card-title">Coding Trivia</div>
+          <div class="card-icon">🧠</div>
         </div>
         <div class="card-body">
-          <p class="card-desc">Ikuti pola kedipan warna! Jangan salah urutan ya, bisa game over!</p>
-          <div class="simon-grid">
-            <div class="simon-pad pad-green" id="simon-pad-0" onclick="handleSimonPadClick(0)" role="button" aria-label="Pad Hijau">🟢</div>
-            <div class="simon-pad pad-red" id="simon-pad-1" onclick="handleSimonPadClick(1)" role="button" aria-label="Pad Merah">🔴</div>
-            <div class="simon-pad pad-yellow" id="simon-pad-2" onclick="handleSimonPadClick(2)" role="button" aria-label="Pad Kuning">🟡</div>
-            <div class="simon-pad pad-blue" id="simon-pad-3" onclick="handleSimonPadClick(3)" role="button" aria-label="Pad Biru">🔵</div>
+          <p class="card-desc">Seberapa jago kamu soal coding &amp; tech? Jawab kuis seru ini!</p>
+          <div class="trivia-progress-wrap">
+            <div class="trivia-progress-bar" id="trivia-progress-bar"></div>
           </div>
-          <div class="simon-stats">
-            <div class="simon-stat-item">
-              <strong id="simon-score">0</strong>
-              RONDE
-            </div>
-            <div class="simon-stat-item">
-              <strong id="simon-best">—</strong>
-              TERBAIK
-            </div>
+          <div class="trivia-qnum" id="trivia-qnum">Soal 0 / 0</div>
+          <div class="trivia-question" id="trivia-question">Tekan START untuk mulai kuis!</div>
+          <div class="trivia-options" id="trivia-options"></div>
+          <div class="trivia-score-row">
+            <span class="trivia-score-label">Skor:</span>
+            <span class="trivia-score-val" id="trivia-score">0</span>
+            <span class="trivia-score-label"> / <span id="trivia-total">0</span></span>
           </div>
-          <button class="btn btn-dark" id="simon-btn" onclick="startSimonGame()">🚥 MULAI MAIN</button>
+          <button class="btn btn-dark" id="trivia-btn" onclick="startTrivia()">🧠 START KUIS!</button>
         </div>
       </div>
 
     </section>
 
-    <!-- LEADERBOARD / FUN STATS -->
+
     <section class="stats-section" id="stats">
       <div class="stats-header">
         <div class="stats-title">📊 STATISTIK MENUNGGU</div>
@@ -412,6 +410,6 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast" aria-live="polite"></div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

@@ -33,13 +33,6 @@ const VIBE_LABELS = [
 
 
 
-const SLOT_SYMBOLS = ["🎯", "⭐", "🔥", "💎", "🚀", "🎉", "🏆", "⚡", "🎪", "🌈"];
-const SLOT_RESULTS = {
-  win: "🎉 JACKPOT! Alamat bakal menang nih!",
-  almost: "😲 Hampir jackpot! Spin lagi!",
-  normal: "😅 Spin lagi, belum hoki!",
-};
-
 const CLICK_RANKS = [
   { min: 0, label: "🐢 Santai banget nih..." },
   { min: 10, label: "🦆 Udah mulai anget!" },
@@ -186,60 +179,127 @@ function animateNumber(id, target) {
   }, 50);
 }
 
-// ── SLOT MACHINE ────────────────────────────────────────
-let isSpinning = false;
+// ── TYPING SPEED TEST ────────────────────────────────────
+const TYPING_PROMPTS = [
+  "vibe coding bukan soal tools tapi soal semangat dan kreativitas",
+  "google juara vibe coding indonesia dua ribu dua puluh enam",
+  "ship early ship often iterate fast dan jangan lupa deploy",
+  "kode yang bagus itu simpel mudah dibaca dan mudah diubah",
+  "belajar coding itu susah tapi hasilnya worth it banget percaya deh",
+  "debug itu bukan gagal tapi proses belajar yang menyenangkan",
+  "satu commit sehari menjaga developer tetap produktif dan bahagia",
+  "nunggu pengumuman sambil ngetik itu produktif namanya",
+  "seratus pemenang akan dapat swag keren dari google indonesia",
+  "vibe coding artinya coding dengan enjoy dan penuh semangat",
+];
 
-function spinSlot() {
-  if (isSpinning) return;
-  isSpinning = true;
+const TYPING_GRADES = [
+  { min: 80,  label: '🏆 Programmer Pro!',  toast: '🏆 WPM kamu luar biasa! Jempolan!' },
+  { min: 60,  label: '⚡ Ngebut banget!',    toast: '⚡ Kenceng! Jari kamu turbo nih!' },
+  { min: 40,  label: '👍 Lumayan cepet!',   toast: '👍 Bagus! Masih bisa lebih ngebut!' },
+  { min: 25,  label: '🙂 Santai mode',      toast: '🙂 Pelan-pelan juga fine kok!' },
+  { min: 0,   label: '🐢 Masih warmup...',  toast: '🐢 Coba lagi, pasti lebih cepat!' },
+];
 
-  const btn = document.getElementById('spin-btn');
-  const resultEl = document.getElementById('slot-result');
-  btn.disabled = true;
-  btn.textContent = '🌀 SPINNING...';
-  resultEl.textContent = '...';
+let typingActive = false;
+let typingStartTime = null;
+let typingPromptText = '';
+let typingBestWpm = null;
 
-  const reels = ['slot-a', 'slot-b', 'slot-c'];
-  reels.forEach(id => {
-    document.getElementById(id).classList.add('spinning');
-  });
+function startTyping() {
+  const btn = document.getElementById('typing-btn');
+  const input = document.getElementById('typing-input');
+  const promptEl = document.getElementById('typing-prompt');
+  const wpmEl = document.getElementById('typing-wpm');
+  const accEl = document.getElementById('typing-acc');
 
-  // Animate each reel landing
-  const finalSymbols = [];
-  reels.forEach((id, i) => {
-    const delay = 700 + i * 400;
-    setTimeout(() => {
-      const sym = SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
-      finalSymbols.push(sym);
-      const el = document.getElementById(id);
-      el.classList.remove('spinning');
-      el.querySelector('span').textContent = sym;
-    }, delay);
-  });
+  // Pick a random prompt (different from last)
+  let newPrompt;
+  do { newPrompt = TYPING_PROMPTS[Math.floor(Math.random() * TYPING_PROMPTS.length)]; }
+  while (newPrompt === typingPromptText && TYPING_PROMPTS.length > 1);
+  typingPromptText = newPrompt;
 
-  // Final result
-  setTimeout(() => {
-    const [a, b, c] = finalSymbols;
-    let msg;
-    if (a === b && b === c) {
-      msg = SLOT_RESULTS.win;
-      resultEl.style.background = '#FFE135';
-      resultEl.style.color = '#000';
-      showToast('🎰 JACKPOT! Lucky banget kamu!');
-    } else if (a === b || b === c || a === c) {
-      msg = SLOT_RESULTS.almost;
-      resultEl.style.background = 'rgba(0,0,0,0.1)';
-      resultEl.style.color = '';
-    } else {
-      msg = SLOT_RESULTS.normal;
-      resultEl.style.background = 'rgba(0,0,0,0.1)';
-      resultEl.style.color = '';
+  // Render prompt as individually-spanned characters
+  promptEl.innerHTML = typingPromptText
+    .split('')
+    .map((ch, i) => `<span class="typing-char" id="tc-${i}">${ch === ' ' ? '&nbsp;' : ch}</span>`)
+    .join('');
+
+  // Add cursor to first char
+  const firstChar = document.getElementById('tc-0');
+  if (firstChar) firstChar.classList.add('cursor');
+
+  // Reset input
+  input.value = '';
+  input.disabled = false;
+  input.focus();
+  wpmEl.textContent = '—';
+  accEl.textContent = '—';
+  typingStartTime = null;
+  typingActive = true;
+
+  btn.textContent = '🔄 Ganti Soal';
+
+  // Listen for input
+  input.oninput = handleTypingInput;
+}
+
+function handleTypingInput(e) {
+  if (!typingActive) return;
+  const typed = e.target.value;
+
+  // Start timer on first keypress
+  if (!typingStartTime && typed.length > 0) {
+    typingStartTime = Date.now();
+  }
+
+  // Highlight each char
+  for (let i = 0; i < typingPromptText.length; i++) {
+    const span = document.getElementById(`tc-${i}`);
+    if (!span) continue;
+    span.classList.remove('correct', 'wrong', 'cursor');
+    if (i < typed.length) {
+      span.classList.add(typed[i] === typingPromptText[i] ? 'correct' : 'wrong');
+    } else if (i === typed.length) {
+      span.classList.add('cursor');
     }
-    resultEl.textContent = msg;
-    btn.disabled = false;
-    btn.textContent = '🎰 SPIN LAGI!';
-    isSpinning = false;
-  }, 2200);
+  }
+
+  // Done!
+  if (typed.length >= typingPromptText.length) {
+    finishTyping(typed);
+  }
+}
+
+function finishTyping(typed) {
+  typingActive = false;
+  const input = document.getElementById('typing-input');
+  const btn = document.getElementById('typing-btn');
+  input.disabled = true;
+
+  const elapsedMin = (Date.now() - typingStartTime) / 60000;
+  const words = typingPromptText.trim().split(' ').length;
+  const wpm = Math.round(words / elapsedMin);
+
+  // Accuracy: correct chars / total chars
+  let correct = 0;
+  for (let i = 0; i < typingPromptText.length; i++) {
+    if (typed[i] === typingPromptText[i]) correct++;
+  }
+  const acc = Math.round((correct / typingPromptText.length) * 100);
+
+  // Update best
+  if (typingBestWpm === null || wpm > typingBestWpm) typingBestWpm = wpm;
+
+  document.getElementById('typing-wpm').textContent = wpm;
+  document.getElementById('typing-acc').textContent = acc + '%';
+  document.getElementById('typing-best').textContent = typingBestWpm;
+
+  // Grade
+  const grade = TYPING_GRADES.find(g => wpm >= g.min) || TYPING_GRADES[TYPING_GRADES.length - 1];
+  showToast(`${grade.toast} (${wpm} WPM, ${acc}% akurat)`);
+
+  btn.textContent = '⌨️ COBA LAGI';
 }
 
 // ── VIBE CHECKER ────────────────────────────────────────

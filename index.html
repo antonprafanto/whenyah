@@ -98,22 +98,44 @@
     <!-- MINI GAMES GRID -->
     <section class="games-grid" id="games">
 
-      <!-- GAME 1: Lucky Number Spinner -->
-      <div class="game-card card-yellow" id="card-spinner">
+      <!-- GAME 1: Typing Speed Test -->
+      <div class="game-card card-yellow" id="card-typing">
         <div class="card-header">
           <div class="card-number">01</div>
-          <div class="card-title">Lucky Number</div>
-          <div class="card-icon">🎰</div>
+          <div class="card-title">Typing Speed</div>
+          <div class="card-icon">⌨️</div>
         </div>
         <div class="card-body">
-          <p class="card-desc">Coba spin buat tau nomor keberuntungan kamu hari ini!</p>
-          <div class="slot-machine" id="slot-machine">
-            <div class="slot-reel" id="slot-a"><span>?</span></div>
-            <div class="slot-reel" id="slot-b"><span>?</span></div>
-            <div class="slot-reel" id="slot-c"><span>?</span></div>
+          <p class="card-desc">Ketik kalimat di bawah secepat mungkin! Ukur WPM (kata per menit) kamu!</p>
+          <div class="typing-prompt" id="typing-prompt">Tekan START untuk mulai!</div>
+          <div class="typing-input-wrap">
+            <textarea
+              class="typing-input"
+              id="typing-input"
+              placeholder="Hasil ketikan kamu muncul di sini..."
+              rows="2"
+              disabled
+              spellcheck="false"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+            ></textarea>
           </div>
-          <div class="slot-result" id="slot-result">Belum spin nih!</div>
-          <button class="btn btn-dark" id="spin-btn" onclick="spinSlot()">🎰 SPIN!</button>
+          <div class="typing-stats">
+            <div class="typing-stat">
+              <span class="typing-stat-val" id="typing-wpm">—</span>
+              <span class="typing-stat-lbl">WPM</span>
+            </div>
+            <div class="typing-stat">
+              <span class="typing-stat-val" id="typing-acc">—</span>
+              <span class="typing-stat-lbl">Akurasi</span>
+            </div>
+            <div class="typing-stat">
+              <span class="typing-stat-val" id="typing-best">—</span>
+              <span class="typing-stat-lbl">Best WPM</span>
+            </div>
+          </div>
+          <button class="btn btn-dark" id="typing-btn" onclick="startTyping()">⌨️ START!</button>
         </div>
       </div>
 

@@ -796,207 +796,188 @@ function simonSetButtonsDisabled(disabled) {
   }
 }
 
-// ── CODING TRIVIA ─────────────────────────────────────────
-var TRIVIA_QUESTIONS = [
-  {
-    q: "Apa singkatan dari HTML?",
-    opts: ["HyperText Markup Language", "High Transfer Markup Layout", "Hyper Technical Machine Logic", "HyperText Markdown Link"],
-    ans: 0
-  },
-  {
-    q: "Perintah Git apa yang dipakai untuk menyimpan perubahan ke repo lokal?",
-    opts: ["git push", "git save", "git commit", "git apply"],
-    ans: 2
-  },
-  {
-    q: "Bahasa pemrograman apa yang paling banyak dipakai di web browser secara native?",
-    opts: ["Python", "Java", "TypeScript", "JavaScript"],
-    ans: 3
-  },
-  {
-    q: "Apa kepanjangan dari API?",
-    opts: ["Application Programming Interface", "Automated Program Integration", "App Process Installer", "Advanced Protocol Input"],
-    ans: 0
-  },
-  {
-    q: "CSS adalah singkatan dari...?",
-    opts: ["Computer Style Script", "Cascading Style Sheets", "Creative Styling System", "Custom Site Structure"],
-    ans: 1
-  },
-  {
-    q: "Manakah yang BUKAN merupakan JavaScript framework/library?",
-    opts: ["React", "Vue", "Django", "Angular"],
-    ans: 2
-  },
-  {
-    q: "Apa fungsi dari perintah 'git pull'?",
-    opts: [
-      "Menghapus file dari repo",
-      "Mengambil dan menggabungkan perubahan dari remote",
-      "Membuat branch baru",
-      "Membatalkan commit terakhir"
-    ],
-    ans: 1
-  },
-  {
-    q: "Dalam pemrograman, 'bug' pertama kali ditemukan dalam konteks apa?",
-    opts: [
-      "Kesalahan logika di kode C",
-      "Ngengat nyangkut di relay komputer",
-      "Typo di punch card",
-      "Error di bahasa Assembly"
-    ],
-    ans: 1
-  },
-  {
-    q: "Apa itu 'vibe coding'?",
-    opts: [
-      "Coding sambil dengerin musik lo-fi",
-      "Coding cepat-cepatan tanpa mikir",
-      "Pendekatan coding yang fun, santai, dan kreatif",
-      "Framework JavaScript baru dari Google"
-    ],
-    ans: 2
-  },
-  {
-    q: "Berapa jumlah pemenang SWAG di event #JuaraVibeCoding ini?",
-    opts: ["50 orang", "200 orang", "100 orang", "75 orang"],
-    ans: 2
-  },
-];
+// ── WHACK-A-MOLE ─────────────────────────────────────────
+var MOLE_FACES   = ['🐹','🦔','🐭','🐻','🦊','🐸','🐨','🐼','🦝'];
+var MOLE_CELLS   = 9;
+var moleActive   = false;
+var moleScore    = 0;
+var moleMiss     = 0;
+var moleTimeLeft = 30;
+var moleBest     = null;
+var moleTimerID  = null;
+var moleSpawnID  = null;
+var moleActiveCells = {};   // cellIdx → timeout ID
+var moleSpawnInterval = 900; // ms between spawns (gets faster)
 
-var triviaCurrentQ  = 0;
-var triviaScore     = 0;
-var triviaAnswered  = false;
-var triviaShuffled  = [];
-var triviaTimer     = null;
-var TRIVIA_TIME     = 8000; // ms per question
+function startMole() {
+  // Reset
+  moleScore    = 0;
+  moleMiss     = 0;
+  moleTimeLeft = 30;
+  moleActive   = true;
+  moleActiveCells = {};
+  moleSpawnInterval = 900;
 
-function startTrivia() {
-  triviaScore    = 0;
-  triviaCurrentQ = 0;
-  triviaAnswered = false;
-  triviaShuffled = shuffleArray(TRIVIA_QUESTIONS.slice());
+  var btn = document.getElementById('mole-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '🔨 Bermain...'; }
 
-  var btn = document.getElementById('trivia-btn');
-  if (btn) { btn.disabled = true; btn.style.display = 'none'; }
+  moleUpdateUI();
+  moleSetMsg('Pukul mole-nya! Jangan sampai kabur!');
+  moleClearAllCells();
 
-  var totalEl = document.getElementById('trivia-total');
-  var scoreEl = document.getElementById('trivia-score');
-  if (totalEl) totalEl.textContent = triviaShuffled.length;
-  if (scoreEl) scoreEl.textContent = 0;
-
-  triviaShowQuestion();
-}
-
-function triviaShowQuestion() {
-  if (triviaCurrentQ >= triviaShuffled.length) {
-    triviaFinish();
-    return;
-  }
-
-  triviaAnswered = false;
-  clearTimeout(triviaTimer);
-  var q = triviaShuffled[triviaCurrentQ];
-
-  // Update progress
-  var pct = (triviaCurrentQ / triviaShuffled.length) * 100;
-  var bar = document.getElementById('trivia-progress-bar');
-  if (bar) bar.style.width = pct + '%';
-
-  var qnumEl = document.getElementById('trivia-qnum');
-  if (qnumEl) qnumEl.textContent = 'Soal ' + (triviaCurrentQ + 1) + ' / ' + triviaShuffled.length;
-
-  var qEl = document.getElementById('trivia-question');
-  if (qEl) qEl.textContent = q.q;
-
-  // Build options
-  var optsEl = document.getElementById('trivia-options');
-  if (!optsEl) return;
-  optsEl.innerHTML = '';
-  var labels = ['A', 'B', 'C', 'D'];
-  for (var i = 0; i < q.opts.length; i++) {
-    (function(idx) {
-      var btn = document.createElement('button');
-      btn.className = 'trivia-opt';
-      btn.id        = 'trivia-opt-' + idx;
-      btn.innerHTML = '<span>' + labels[idx] + '</span> ' + q.opts[idx];
-      btn.onclick   = function() { triviaAnswer(idx); };
-      optsEl.appendChild(btn);
-    })(i);
-  }
-
-  // Auto-advance timer
-  triviaTimer = setTimeout(function() {
-    if (!triviaAnswered) {
-      triviaAnswered = true;
-      triviaRevealCorrect(q.ans, -1);
-      setTimeout(function() { triviaCurrentQ++; triviaShowQuestion(); }, 1800);
+  // Countdown display
+  var countdown = 3;
+  moleSetMsg('Siap? ' + countdown + '...');
+  var cdInterval = setInterval(function() {
+    countdown--;
+    if (countdown > 0) {
+      moleSetMsg('Siap? ' + countdown + '...');
+    } else {
+      clearInterval(cdInterval);
+      moleSetMsg('MULAI! Pukul mole-nya!');
+      // Start spawning and timer
+      moleSpawnLoop();
+      moleCountdown();
     }
-  }, TRIVIA_TIME);
+  }, 700);
 }
 
-function triviaAnswer(selectedIdx) {
-  if (triviaAnswered) return;
-  triviaAnswered = true;
-  clearTimeout(triviaTimer);
+function moleCountdown() {
+  moleTimerID = setInterval(function() {
+    moleTimeLeft--;
+    var timerEl = document.getElementById('mole-timer');
+    if (timerEl) timerEl.textContent = moleTimeLeft;
 
-  var q = triviaShuffled[triviaCurrentQ];
-  var isCorrect = selectedIdx === q.ans;
-  if (isCorrect) {
-    triviaScore++;
-    var scoreEl = document.getElementById('trivia-score');
-    if (scoreEl) scoreEl.textContent = triviaScore;
-  }
-
-  triviaRevealCorrect(q.ans, selectedIdx);
-  setTimeout(function() { triviaCurrentQ++; triviaShowQuestion(); }, 1600);
-}
-
-function triviaRevealCorrect(correctIdx, selectedIdx) {
-  for (var i = 0; i < 4; i++) {
-    var btn = document.getElementById('trivia-opt-' + i);
-    if (!btn) continue;
-    btn.disabled = true;
-    btn.classList.remove('correct', 'wrong', 'reveal-correct');
-    if (i === correctIdx) {
-      btn.classList.add(selectedIdx === -1 ? 'reveal-correct' : 'correct');
-    } else if (i === selectedIdx && selectedIdx !== correctIdx) {
-      btn.classList.add('wrong');
+    // Speed up every 8 seconds
+    if (moleTimeLeft % 8 === 0 && moleTimeLeft > 0) {
+      moleSpawnInterval = Math.max(350, moleSpawnInterval - 120);
     }
-  }
+
+    if (moleTimeLeft <= 0) {
+      moleGameOver();
+    }
+  }, 1000);
 }
 
-function triviaFinish() {
-  var pct = Math.round((triviaScore / triviaShuffled.length) * 100);
-  var qEl = document.getElementById('trivia-question');
-  if (qEl) qEl.textContent = 'Kuis selesai! Skor kamu: ' + triviaScore + '/' + triviaShuffled.length + ' (' + pct + '%)';
-
-  var optsEl = document.getElementById('trivia-options');
-  if (optsEl) optsEl.innerHTML = '';
-
-  var bar = document.getElementById('trivia-progress-bar');
-  if (bar) bar.style.width = '100%';
-
-  var qnumEl = document.getElementById('trivia-qnum');
-  if (qnumEl) qnumEl.textContent = 'Selesai!';
-
-  var msg = pct >= 80 ? 'Jenius! Kamu beneran jago coding!' :
-            pct >= 60 ? 'Bagus! Masih banyak yang bisa dipelajari.' :
-            pct >= 40 ? 'Lumayan! Terus belajar ya!' :
-                        'Semangat belajar lagi, next time pasti lebih baik!';
-  showToast(msg + ' (' + triviaScore + '/' + triviaShuffled.length + ')');
-
-  var btn = document.getElementById('trivia-btn');
-  if (btn) { btn.disabled = false; btn.style.display = ''; btn.textContent = '🔄 MAIN LAGI!'; }
+function moleSpawnLoop() {
+  if (!moleActive) return;
+  moleSpawnOneMole();
+  moleSpawnID = setTimeout(moleSpawnLoop, moleSpawnInterval);
 }
 
-function shuffleArray(arr) {
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+function moleSpawnOneMole() {
+  // Pick a random cell that doesn't already have a mole
+  var available = [];
+  for (var i = 0; i < MOLE_CELLS; i++) {
+    if (!moleActiveCells[i]) available.push(i);
   }
-  return arr;
+  if (available.length === 0) return;
+
+  var idx  = available[Math.floor(Math.random() * available.length)];
+  var face = MOLE_FACES[Math.floor(Math.random() * MOLE_FACES.length)];
+  var cell = document.getElementById('mole-' + idx);
+  if (!cell) return;
+
+  // Show mole
+  cell.classList.add('has-mole');
+  var faceEl = cell.querySelector('.mole-face');
+  if (faceEl) faceEl.textContent = face;
+
+  // Mole disappears after a while (if not whacked)
+  var stayTime = Math.max(500, 1200 - (30 - moleTimeLeft) * 20);
+  moleActiveCells[idx] = setTimeout(function() {
+    if (moleActiveCells[idx] !== undefined) {
+      // Mole escaped — count as miss
+      moleMiss++;
+      var missEl = document.getElementById('mole-miss');
+      if (missEl) missEl.textContent = moleMiss;
+      moleClearCell(idx);
+    }
+  }, stayTime);
+}
+
+function whackMole(idx) {
+  if (!moleActive) return;
+  if (!moleActiveCells[idx] && moleActiveCells[idx] !== 0) return; // No mole here
+
+  // Cancel the auto-disappear
+  clearTimeout(moleActiveCells[idx]);
+  delete moleActiveCells[idx];
+
+  // Hit animation
+  var cell = document.getElementById('mole-' + idx);
+  if (cell) {
+    cell.classList.remove('has-mole');
+    cell.classList.add('whacked');
+    setTimeout(function() {
+      cell.classList.remove('whacked');
+      var faceEl = cell.querySelector('.mole-face');
+      if (faceEl) faceEl.textContent = '';
+    }, 280);
+  }
+
+  // Score
+  moleScore++;
+  var scoreEl = document.getElementById('mole-score');
+  if (scoreEl) scoreEl.textContent = moleScore;
+
+  // Milestone messages
+  if (moleScore === 5)  moleSetMsg('Bagus! Terus pukul!');
+  if (moleScore === 10) moleSetMsg('10 pukulan! API kamu cepet nih!');
+  if (moleScore === 20) moleSetMsg('20! Tangan kamu turbo bro!');
+}
+
+function moleGameOver() {
+  moleActive = false;
+  clearInterval(moleTimerID);
+  clearTimeout(moleSpawnID);
+  moleClearAllCells();
+
+  if (moleBest === null || moleScore > moleBest) moleBest = moleScore;
+
+  var bestEl = document.getElementById('mole-best');
+  if (bestEl) bestEl.textContent = moleBest;
+
+  var grade = moleScore >= 25 ? 'DEWA PUKUL! Reflex kamu gila!' :
+              moleScore >= 15 ? 'Mantap! ' + moleScore + ' pukul!' :
+              moleScore >= 8  ? 'Lumayan! ' + moleScore + ' pukul!' :
+                                'Coba lagi! ' + moleScore + ' pukul.';
+  moleSetMsg('GAME OVER! Skor: ' + moleScore + ' | Miss: ' + moleMiss);
+  showToast(grade + ' (Best: ' + moleBest + ')');
+
+  var btn = document.getElementById('mole-btn');
+  if (btn) { btn.disabled = false; btn.textContent = '🔨 MAIN LAGI!'; }
+}
+
+function moleClearCell(idx) {
+  delete moleActiveCells[idx];
+  var cell = document.getElementById('mole-' + idx);
+  if (!cell) return;
+  cell.classList.remove('has-mole', 'whacked');
+  var faceEl = cell.querySelector('.mole-face');
+  if (faceEl) faceEl.textContent = '';
+}
+
+function moleClearAllCells() {
+  for (var i = 0; i < MOLE_CELLS; i++) {
+    clearTimeout(moleActiveCells[i]);
+    moleClearCell(i);
+  }
+  moleActiveCells = {};
+}
+
+function moleUpdateUI() {
+  var scoreEl = document.getElementById('mole-score');
+  var missEl  = document.getElementById('mole-miss');
+  var timerEl = document.getElementById('mole-timer');
+  if (scoreEl) scoreEl.textContent = moleScore;
+  if (missEl)  missEl.textContent  = moleMiss;
+  if (timerEl) timerEl.textContent = moleTimeLeft;
+}
+
+function moleSetMsg(msg) {
+  var el = document.getElementById('mole-msg');
+  if (el) el.textContent = msg;
 }
 
 // ── EASTER EGG (Konami Code) ────────────────────────────

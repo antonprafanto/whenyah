@@ -284,27 +284,34 @@
         </div>
       </div>
 
-      <!-- GAME 8: Coding Trivia -->
-      <div class="game-card card-red" id="card-trivia">
+      <!-- GAME 8: Whack-a-Mole -->
+      <div class="game-card card-red" id="card-mole">
         <div class="card-header">
           <div class="card-number">08</div>
-          <div class="card-title">Coding Trivia</div>
-          <div class="card-icon">🧠</div>
+          <div class="card-title">Whack-a-Mole!</div>
+          <div class="card-icon">🔨</div>
         </div>
         <div class="card-body">
-          <p class="card-desc">Seberapa jago kamu soal coding &amp; tech? Jawab kuis seru ini!</p>
-          <div class="trivia-progress-wrap">
-            <div class="trivia-progress-bar" id="trivia-progress-bar"></div>
+          <p class="card-desc">Pukul si mole yang muncul secepat mungkin! Jangan sampai kehabisan waktu!</p>
+          <div class="mole-header-row">
+            <div>⏱️ <span class="mole-timer-val" id="mole-timer">30</span>s</div>
+            <div>💥 Pukul: <span class="mole-score-val" id="mole-score">0</span></div>
+            <div>✨ Miss: <span id="mole-miss">0</span></div>
           </div>
-          <div class="trivia-qnum" id="trivia-qnum">Soal 0 / 0</div>
-          <div class="trivia-question" id="trivia-question">Tekan START untuk mulai kuis!</div>
-          <div class="trivia-options" id="trivia-options"></div>
-          <div class="trivia-score-row">
-            <span class="trivia-score-label">Skor:</span>
-            <span class="trivia-score-val" id="trivia-score">0</span>
-            <span class="trivia-score-label"> / <span id="trivia-total">0</span></span>
+          <div class="mole-grid" id="mole-grid">
+            <div class="mole-cell" id="mole-0" onclick="whackMole(0)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-1" onclick="whackMole(1)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-2" onclick="whackMole(2)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-3" onclick="whackMole(3)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-4" onclick="whackMole(4)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-5" onclick="whackMole(5)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-6" onclick="whackMole(6)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-7" onclick="whackMole(7)"><span class="mole-face"></span></div>
+            <div class="mole-cell" id="mole-8" onclick="whackMole(8)"><span class="mole-face"></span></div>
           </div>
-          <button class="btn btn-dark" id="trivia-btn" onclick="startTrivia()">🧠 START KUIS!</button>
+          <div class="mole-msg" id="mole-msg">Tekan START — pukul mole yang muncul!</div>
+          <div class="mole-best-row">🏆 Best Score: <span id="mole-best">—</span></div>
+          <button class="btn btn-dark" id="mole-btn" onclick="startMole()">🔨 START!</button>
         </div>
       </div>
 
@@ -410,6 +417,6 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast" aria-live="polite"></div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

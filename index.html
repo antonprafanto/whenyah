@@ -268,8 +268,14 @@
             <!-- Diisi dinamis oleh JS -->
           </div>
           <div class="memory-stats">
-            <div class="memory-stat-item">Langkah: <strong id="memory-moves">0</strong></div>
-            <div class="memory-stat-item">Terbaik: <strong id="memory-best">—</strong></div>
+            <div class="memory-stat-item">
+              <strong id="memory-moves">0</strong>
+              LANGKAH
+            </div>
+            <div class="memory-stat-item">
+              <strong id="memory-best">—</strong>
+              TERBAIK
+            </div>
           </div>
           <button class="btn btn-dark" id="memory-btn" onclick="startMemoryGame()">🔄 RESET GAME</button>
         </div>
@@ -285,14 +291,20 @@
         <div class="card-body">
           <p class="card-desc">Ikuti pola kedipan warna! Jangan salah urutan ya, bisa game over!</p>
           <div class="simon-grid">
-            <div class="simon-pad pad-green" id="simon-pad-0" onclick="handleSimonPadClick(0)" role="button" aria-label="Pad Hijau"></div>
-            <div class="simon-pad pad-red" id="simon-pad-1" onclick="handleSimonPadClick(1)" role="button" aria-label="Pad Merah"></div>
-            <div class="simon-pad pad-yellow" id="simon-pad-2" onclick="handleSimonPadClick(2)" role="button" aria-label="Pad Kuning"></div>
-            <div class="simon-pad pad-blue" id="simon-pad-3" onclick="handleSimonPadClick(3)" role="button" aria-label="Pad Biru"></div>
+            <div class="simon-pad pad-green" id="simon-pad-0" onclick="handleSimonPadClick(0)" role="button" aria-label="Pad Hijau">🟢</div>
+            <div class="simon-pad pad-red" id="simon-pad-1" onclick="handleSimonPadClick(1)" role="button" aria-label="Pad Merah">🔴</div>
+            <div class="simon-pad pad-yellow" id="simon-pad-2" onclick="handleSimonPadClick(2)" role="button" aria-label="Pad Kuning">🟡</div>
+            <div class="simon-pad pad-blue" id="simon-pad-3" onclick="handleSimonPadClick(3)" role="button" aria-label="Pad Biru">🔵</div>
           </div>
           <div class="simon-stats">
-            <div class="simon-stat-item">Skor: <strong id="simon-score">0</strong></div>
-            <div class="simon-stat-item">Terbaik: <strong id="simon-best">—</strong></div>
+            <div class="simon-stat-item">
+              <strong id="simon-score">0</strong>
+              RONDE
+            </div>
+            <div class="simon-stat-item">
+              <strong id="simon-best">—</strong>
+              TERBAIK
+            </div>
           </div>
           <button class="btn btn-dark" id="simon-btn" onclick="startSimonGame()">🚥 MULAI MAIN</button>
         </div>
@@ -400,6 +412,6 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast" aria-live="polite"></div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

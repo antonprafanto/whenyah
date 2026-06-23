@@ -711,21 +711,25 @@ function initMemoryGame() {
   var grid = document.getElementById('memory-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  
+
   memoryFlipped = [];
   memoryMoves = 0;
   memoryLock = false;
-  
+
   var movesEl = document.getElementById('memory-moves');
   if (movesEl) movesEl.textContent = '0';
-  
+
   var shuffled = shuffleArray(memoryTiles.slice());
   for (var i = 0; i < shuffled.length; i++) {
     var tile = document.createElement('div');
     tile.className = 'memory-tile';
     tile.setAttribute('data-index', i);
     tile.setAttribute('data-value', shuffled[i]);
-    tile.textContent = '?';
+    // Inner wrapper needed for padding-bottom aspect-ratio trick
+    var inner = document.createElement('div');
+    inner.className = 'memory-tile-inner';
+    inner.textContent = '?';
+    tile.appendChild(inner);
     tile.onclick = handleTileClick;
     grid.appendChild(tile);
   }
@@ -739,24 +743,26 @@ function startMemoryGame() {
 function handleTileClick(e) {
   if (memoryLock) return;
   var tile = e.currentTarget;
-  
+
   // Don't click already flipped or matched tiles
   if (tile.classList.contains('flipped') || tile.classList.contains('matched')) return;
-  
+
+  // Reveal emoji in inner div
+  var inner = tile.querySelector('.memory-tile-inner');
+  if (inner) inner.textContent = tile.getAttribute('data-value');
   tile.classList.add('flipped');
-  tile.textContent = tile.getAttribute('data-value');
   memoryFlipped.push(tile);
-  
+
   if (memoryFlipped.length === 2) {
     memoryMoves++;
     var movesEl = document.getElementById('memory-moves');
     if (movesEl) movesEl.textContent = memoryMoves;
-    
+
     var tile1 = memoryFlipped[0];
     var tile2 = memoryFlipped[1];
     var val1 = tile1.getAttribute('data-value');
     var val2 = tile2.getAttribute('data-value');
-    
+
     if (val1 === val2) {
       // Match!
       tile1.classList.add('matched');
@@ -764,7 +770,7 @@ function handleTileClick(e) {
       tile1.classList.remove('flipped');
       tile2.classList.remove('flipped');
       memoryFlipped = [];
-      
+
       // Check win
       var matchedCount = document.querySelectorAll('.memory-tile.matched').length;
       if (matchedCount === memoryTiles.length) {
@@ -773,19 +779,21 @@ function handleTileClick(e) {
           var bestEl = document.getElementById('memory-best');
           if (bestEl) bestEl.textContent = memoryBest;
         }
-        showToast('Keren! Semua pasangan ketemu dalam ' + memoryMoves + ' langkah!');
+        showToast('HEBAT! Semua pasangan ketemu dalam ' + memoryMoves + ' langkah! 🎉');
       }
     } else {
-      // No match
+      // No match — flip back after delay
       memoryLock = true;
       setTimeout(function() {
+        var inner1 = tile1.querySelector('.memory-tile-inner');
+        var inner2 = tile2.querySelector('.memory-tile-inner');
         tile1.classList.remove('flipped');
         tile2.classList.remove('flipped');
-        tile1.textContent = '?';
-        tile2.textContent = '?';
+        if (inner1) inner1.textContent = '?';
+        if (inner2) inner2.textContent = '?';
         memoryFlipped = [];
         memoryLock = false;
-      }, 1000);
+      }, 900);
     }
   }
 }

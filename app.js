@@ -31,18 +31,7 @@ const VIBE_LABELS = [
   { max: 100, label: "💥 OVER 9000! MAXIMUM VIBE!", emoji: "🫠" },
 ];
 
-const CRYSTAL_RESULTS = [
-  { emoji: "🏆", msg: "Crystal ball bilang: KAMU MENANG! (mungkin...)" },
-  { emoji: "🎯", msg: "Aura kamu hari ini sangat memenangkan SWAG!" },
-  { emoji: "🌈", msg: "Keberuntunganmu level dewa. GG!" },
-  { emoji: "😂", msg: "Maaf bro... aku cuma bola plastik biasa." },
-  { emoji: "🔮", msg: "Masa depan kabur... tapi vibes-nya bagus kok!" },
-  { emoji: "⭐", msg: "Bintang-bintang berpihak padamu. Probably." },
-  { emoji: "🍀", msg: "Lucky clover detected! Tetap semangat!" },
-  { emoji: "🎲", msg: "Probabilitas menangmu: sangat acak." },
-  { emoji: "🦋", msg: "Butterfly effect: klikmu barusan mungkin mengubah segalanya." },
-  { emoji: "🌟", msg: "LUAR BIASA! Crystal ball-ku panas nih kamu yang punya!" },
-];
+
 
 const SLOT_SYMBOLS = ["🎯", "⭐", "🔥", "💎", "🚀", "🎉", "🏆", "⚡", "🎪", "🌈"];
 const SLOT_RESULTS = {
@@ -330,32 +319,122 @@ function newQuote() {
   }, 300);
 }
 
-// ── CRYSTAL BALL ────────────────────────────────────────
-let lastCrystalIdx = -1;
+// ── REACTION TIME GAME ──────────────────────────────────
+// States: idle | countdown | waiting | go | result
+let reactionState = 'idle';
+let reactionGreenAt = null;
+let reactionTimeout = null;
+let reactionBest = null;
+let reactionTries = 0;
 
-function predictWin() {
-  const ball = document.getElementById('crystal-ball');
-  const emoji = document.getElementById('crystal-emoji');
-  const result = document.getElementById('predict-result');
-  const glow = document.getElementById('crystal-glow');
+const REACTION_GRADES = [
+  { max: 150, label: '🏆 PRO GAMER!', toast: '🏆 Reflex dewa! Kamu jago banget!' },
+  { max: 220, label: '⚡ Kilat!', toast: '⚡ Super cepet! Latihan terus!' },
+  { max: 300, label: '👍 Mantap!', toast: '👍 Bagus! Masih bisa lebih cepet!' },
+  { max: 400, label: '😅 Lumayan', toast: '😅 Lumayan! Coba lagi bro!' },
+  { max: 550, label: '🐢 Agak lambat...', toast: '🐢 Tangan kamu lagi ngemil ya?' },
+  { max: Infinity, label: '😴 Ketiduran?', toast: '😴 Hayo fokus! Jangan ngantuk!' },
+];
 
-  // Shake animation
-  ball.style.animation = 'wiggle 0.4s ease-in-out';
-  emoji.textContent = '✨';
-  result.textContent = 'Crystal ball sedang berpikir...';
-  glow.classList.add('active');
+function startReaction() {
+  if (reactionState === 'countdown' || reactionState === 'waiting' || reactionState === 'go') return;
 
-  setTimeout(() => {
-    let idx;
-    do { idx = Math.floor(Math.random() * CRYSTAL_RESULTS.length); }
-    while (idx === lastCrystalIdx);
-    lastCrystalIdx = idx;
+  reactionState = 'countdown';
+  clearTimeout(reactionTimeout);
 
-    const r = CRYSTAL_RESULTS[idx];
-    emoji.textContent = r.emoji;
-    result.textContent = r.msg;
-    ball.style.animation = '';
-  }, 1200);
+  const box = document.getElementById('reaction-box');
+  const stateEl = document.getElementById('reaction-state');
+  const subEl = document.getElementById('reaction-sub');
+  const btn = document.getElementById('reaction-btn');
+
+  box.className = 'reaction-box';
+  btn.disabled = true;
+  btn.textContent = '⏳ Tunggu...';
+
+  // Countdown 3 → 2 → 1 → GO!
+  let count = 3;
+  stateEl.textContent = count;
+  subEl.textContent = 'Bersiap...';
+
+  const tick = () => {
+    count--;
+    if (count > 0) {
+      stateEl.textContent = count;
+      reactionTimeout = setTimeout(tick, 700);
+    } else {
+      // Enter waiting (red) phase — random delay 1-3.5s
+      reactionState = 'waiting';
+      stateEl.textContent = '🔴 TUNGGU!';
+      subEl.textContent = 'Jangan klik dulu!';
+      box.classList.add('state-waiting');
+
+      const delay = 1000 + Math.random() * 2500;
+      reactionTimeout = setTimeout(() => {
+        // GO! (green)
+        reactionState = 'go';
+        reactionGreenAt = Date.now();
+        box.classList.remove('state-waiting');
+        box.classList.add('state-go');
+        stateEl.textContent = '🟢 KLIK!';
+        subEl.textContent = 'SEKARANG!!!';
+      }, delay);
+    }
+  };
+  reactionTimeout = setTimeout(tick, 700);
+}
+
+function handleReactionClick() {
+  if (reactionState === 'idle' || reactionState === 'result') return;
+
+  clearTimeout(reactionTimeout);
+  const box = document.getElementById('reaction-box');
+  const stateEl = document.getElementById('reaction-state');
+  const subEl = document.getElementById('reaction-sub');
+  const btn = document.getElementById('reaction-btn');
+
+  if (reactionState === 'waiting' || reactionState === 'countdown') {
+    // False start — penalty
+    reactionState = 'result';
+    box.className = 'reaction-box state-early';
+    stateEl.textContent = '❌ TERLALU CEPAT!';
+    subEl.textContent = 'Tunggu sampai HIJAU dulu!';
+    showToast('❌ Salah klik! Tunggu sampai hijau ya!');
+    btn.disabled = false;
+    btn.textContent = '⚡ COBA LAGI';
+    return;
+  }
+
+  if (reactionState === 'go') {
+    const elapsed = Date.now() - reactionGreenAt;
+    reactionTries++;
+    reactionState = 'result';
+
+    // Update best
+    if (reactionBest === null || elapsed < reactionBest) {
+      reactionBest = elapsed;
+    }
+
+    // Grade
+    const grade = REACTION_GRADES.find(g => elapsed <= g.max);
+
+    // Update UI
+    box.className = 'reaction-box';
+    box.style.background = 'rgba(0,0,0,0.08)';
+    stateEl.textContent = `${elapsed} ms`;
+    subEl.textContent = grade.label;
+
+    document.getElementById('reaction-last').textContent = elapsed + ' ms';
+    document.getElementById('reaction-best').textContent = reactionBest + ' ms';
+    document.getElementById('reaction-tries').textContent = reactionTries;
+
+    showToast(grade.toast + ` (${elapsed}ms)`);
+
+    btn.disabled = false;
+    btn.textContent = '⚡ COBA LAGI';
+
+    // Reset background after a moment
+    setTimeout(() => { box.style.background = ''; }, 2000);
+  }
 }
 
 // ── PATIENCE GAME ───────────────────────────────────────

@@ -172,23 +172,36 @@
         </div>
       </div>
 
-      <!-- GAME 5: Will I Win? -->
-      <div class="game-card card-orange" id="card-predict">
+      <!-- GAME 5: Reaction Time -->
+      <div class="game-card card-orange" id="card-reaction">
         <div class="card-header">
           <div class="card-number">05</div>
-          <div class="card-title">Akan Menang?</div>
-          <div class="card-icon">🔮</div>
+          <div class="card-title">Reaction Time</div>
+          <div class="card-icon">⚡</div>
         </div>
         <div class="card-body">
-          <p class="card-desc">Crystal ball AI super canggih (ga ada AI-nya sih) untuk prediksi keberuntunganmu!</p>
-          <div class="crystal-ball" id="crystal-ball" onclick="predictWin()">
-            <div class="crystal-inner">
-              <span class="crystal-emoji" id="crystal-emoji">🔮</span>
-            </div>
-            <div class="crystal-glow" id="crystal-glow"></div>
+          <p class="card-desc">Klik secepat mungkin saat kotak jadi <strong>HIJAU</strong>! Jangan klik kalau masih merah — kena penalti!</p>
+          <div class="reaction-box" id="reaction-box" onclick="handleReactionClick()">
+            <div class="reaction-state" id="reaction-state">SIAP?</div>
+            <div class="reaction-sub" id="reaction-sub">Tekan START dulu</div>
           </div>
-          <div class="predict-result" id="predict-result">Klik bola kristal!</div>
-          <button class="btn btn-dark" id="predict-btn" onclick="predictWin()">🔮 RAMAL!</button>
+          <div class="reaction-scoreboard">
+            <div class="reaction-score-item">
+              <div class="reaction-score-val" id="reaction-last">—</div>
+              <div class="reaction-score-lbl">Terakhir</div>
+            </div>
+            <div class="reaction-score-sep">|</div>
+            <div class="reaction-score-item">
+              <div class="reaction-score-val" id="reaction-best">—</div>
+              <div class="reaction-score-lbl">Terbaik</div>
+            </div>
+            <div class="reaction-score-sep">|</div>
+            <div class="reaction-score-item">
+              <div class="reaction-score-val" id="reaction-tries">0</div>
+              <div class="reaction-score-lbl">Percobaan</div>
+            </div>
+          </div>
+          <button class="btn btn-dark" id="reaction-btn" onclick="startReaction()">⚡ START!</button>
         </div>
       </div>
 

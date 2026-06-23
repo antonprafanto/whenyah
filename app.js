@@ -119,6 +119,21 @@ var patienceDone = false;
 var patienceStart = null;
 var patienceRAF = null;
 
+// Memory game state
+var memoryTiles = ['💻', '☕', '🚀', '🐛', '📦', '⚡', '💻', '☕', '🚀', '🐛', '📦', '⚡'];
+var memoryFlipped = [];
+var memoryMoves = 0;
+var memoryLock = false;
+var memoryBest = null;
+
+// Simon game state
+var simonSeq = [];
+var simonUserSeq = [];
+var simonRound = 0;
+var simonActive = false;
+var simonPlayingSeq = false;
+var simonBest = null;
+
 // ── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   initParticles();
@@ -128,6 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
   animateEntrance();
   // Auto-load first quote
   setTimeout(newQuote, 500);
+  // Init new games
+  initMemoryGame();
+  resetSimonState();
 });
 
 // ── PARTICLES ───────────────────────────────────────────
@@ -674,6 +692,205 @@ function animateEntrance() {
     card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
     statObserver.observe(card);
   });
+}
+
+// ── CARI PASANGAN (MEMORY MATCH) ────────────────────────
+function shuffleArray(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+  while (0 !== currentIndex) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+  return array;
+}
+
+function initMemoryGame() {
+  var grid = document.getElementById('memory-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  memoryFlipped = [];
+  memoryMoves = 0;
+  memoryLock = false;
+  
+  var movesEl = document.getElementById('memory-moves');
+  if (movesEl) movesEl.textContent = '0';
+  
+  var shuffled = shuffleArray(memoryTiles.slice());
+  for (var i = 0; i < shuffled.length; i++) {
+    var tile = document.createElement('div');
+    tile.className = 'memory-tile';
+    tile.setAttribute('data-index', i);
+    tile.setAttribute('data-value', shuffled[i]);
+    tile.textContent = '?';
+    tile.onclick = handleTileClick;
+    grid.appendChild(tile);
+  }
+}
+
+function startMemoryGame() {
+  initMemoryGame();
+  showToast('Game di-reset! Cari semua pasangan emoji!');
+}
+
+function handleTileClick(e) {
+  if (memoryLock) return;
+  var tile = e.currentTarget;
+  
+  // Don't click already flipped or matched tiles
+  if (tile.classList.contains('flipped') || tile.classList.contains('matched')) return;
+  
+  tile.classList.add('flipped');
+  tile.textContent = tile.getAttribute('data-value');
+  memoryFlipped.push(tile);
+  
+  if (memoryFlipped.length === 2) {
+    memoryMoves++;
+    var movesEl = document.getElementById('memory-moves');
+    if (movesEl) movesEl.textContent = memoryMoves;
+    
+    var tile1 = memoryFlipped[0];
+    var tile2 = memoryFlipped[1];
+    var val1 = tile1.getAttribute('data-value');
+    var val2 = tile2.getAttribute('data-value');
+    
+    if (val1 === val2) {
+      // Match!
+      tile1.classList.add('matched');
+      tile2.classList.add('matched');
+      tile1.classList.remove('flipped');
+      tile2.classList.remove('flipped');
+      memoryFlipped = [];
+      
+      // Check win
+      var matchedCount = document.querySelectorAll('.memory-tile.matched').length;
+      if (matchedCount === memoryTiles.length) {
+        if (memoryBest === null || memoryMoves < memoryBest) {
+          memoryBest = memoryMoves;
+          var bestEl = document.getElementById('memory-best');
+          if (bestEl) bestEl.textContent = memoryBest;
+        }
+        showToast('Keren! Semua pasangan ketemu dalam ' + memoryMoves + ' langkah!');
+      }
+    } else {
+      // No match
+      memoryLock = true;
+      setTimeout(function() {
+        tile1.classList.remove('flipped');
+        tile2.classList.remove('flipped');
+        tile1.textContent = '?';
+        tile2.textContent = '?';
+        memoryFlipped = [];
+        memoryLock = false;
+      }, 1000);
+    }
+  }
+}
+
+// ── VIBE SEQUENCE (SIMON SAYS) ──────────────────────────
+function resetSimonState() {
+  simonSeq = [];
+  simonUserSeq = [];
+  simonRound = 0;
+  simonActive = false;
+  simonPlayingSeq = false;
+  
+  var scoreEl = document.getElementById('simon-score');
+  if (scoreEl) scoreEl.textContent = '0';
+  
+  var btn = document.getElementById('simon-btn');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = '🚥 MULAI MAIN';
+  }
+}
+
+function startSimonGame() {
+  resetSimonState();
+  simonActive = true;
+  var btn = document.getElementById('simon-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '🎮 SEDANG BERMAIN';
+  }
+  nextSimonRound();
+}
+
+function nextSimonRound() {
+  simonUserSeq = [];
+  simonRound++;
+  var scoreEl = document.getElementById('simon-score');
+  if (scoreEl) scoreEl.textContent = (simonRound - 1).toString();
+  
+  // Add random step (0, 1, 2, or 3)
+  simonSeq.push(Math.floor(Math.random() * 4));
+  
+  playSimonSequence();
+}
+
+function playSimonSequence() {
+  simonPlayingSeq = true;
+  var i = 0;
+  
+  function flashNext() {
+    if (i >= simonSeq.length) {
+      simonPlayingSeq = false;
+      return;
+    }
+    
+    var padIndex = simonSeq[i];
+    flashSimonPad(padIndex);
+    i++;
+    setTimeout(flashNext, 800);
+  }
+  
+  // Wait a bit before starting the playback
+  setTimeout(flashNext, 500);
+}
+
+function flashSimonPad(index) {
+  var pad = document.getElementById('simon-pad-' + index);
+  if (!pad) return;
+  pad.classList.add('active');
+  setTimeout(function() {
+    pad.classList.remove('active');
+  }, 400);
+}
+
+function handleSimonPadClick(index) {
+  if (!simonActive || simonPlayingSeq) return;
+  
+  // Flash clicked pad
+  flashSimonPad(index);
+  
+  simonUserSeq.push(index);
+  
+  // Check correctness
+  var stepIndex = simonUserSeq.length - 1;
+  if (simonUserSeq[stepIndex] !== simonSeq[stepIndex]) {
+    // Incorrect! Game over
+    var score = simonRound - 1;
+    showToast('Yah salah urutan! Skor kamu: ' + score);
+    
+    if (simonBest === null || score > simonBest) {
+      simonBest = score;
+      var bestEl = document.getElementById('simon-best');
+      if (bestEl) bestEl.textContent = simonBest;
+    }
+    
+    resetSimonState();
+    return;
+  }
+  
+  // Correct click. Check if sequence is complete
+  if (simonUserSeq.length === simonSeq.length) {
+    // Round complete!
+    showToast('Mantap! Lanjut ke ronde ' + (simonRound + 1));
+    setTimeout(nextSimonRound, 1000);
+  }
 }
 
 // ── EASTER EGG (Konami Code) ────────────────────────────

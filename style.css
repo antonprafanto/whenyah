@@ -22,6 +22,7 @@
   --orange: #FF7A35;
   --purple: #B57BFF;
   --red: #FF3A3A;
+  --teal: #05D9E8;
   --border: 3px solid var(--black);
   --shadow: 4px 4px 0px var(--black);
   --shadow-lg: 6px 6px 0px var(--black);
@@ -489,6 +490,8 @@ body {
 .card-green { background: var(--green); }
 .card-orange { background: var(--orange); color: var(--white); }
 .card-purple { background: var(--purple); color: var(--white); }
+.card-red { background: var(--red); color: var(--white); }
+.card-teal { background: var(--teal); color: var(--black); }
 
 .card-header {
   display: flex;
@@ -1128,6 +1131,105 @@ body {
 
 .wiggle {
   animation: wiggle 0.4s ease-in-out;
+}
+
+/* ---- CARI PASANGAN (MEMORY MATCH) ---- */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.memory-tile {
+  aspect-ratio: 1;
+  background: var(--black);
+  border: var(--border);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s, background-color 0.15s;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+}
+
+.memory-tile:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.memory-tile.flipped {
+  background: var(--white);
+  color: var(--black);
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.memory-tile.matched {
+  background: var(--green);
+  color: var(--black);
+  cursor: default;
+  border-color: var(--black);
+  transform: none;
+  box-shadow: none;
+}
+
+.memory-stats {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: rgba(0,0,0,0.1);
+  padding: 0.5rem 0.75rem;
+  border: var(--border);
+}
+
+/* ---- VIBE SEQUENCE (SIMON SAYS) ---- */
+.simon-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.simon-pad {
+  aspect-ratio: 1.6;
+  border: var(--border);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background-color 0.1s, transform 0.1s, box-shadow 0.1s;
+  opacity: 0.6;
+}
+
+.simon-pad:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.simon-pad.active {
+  opacity: 1 !important;
+  filter: brightness(1.3) contrast(1.2);
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+.pad-green { background: var(--green); }
+.pad-red { background: var(--red); }
+.pad-yellow { background: var(--yellow); }
+.pad-blue { background: var(--blue); }
+
+.simon-stats {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: rgba(0,0,0,0.1);
+  padding: 0.5rem 0.75rem;
+  border: var(--border);
 }
 
 /* ---- RESPONSIVE ---- */
